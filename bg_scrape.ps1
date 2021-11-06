@@ -75,17 +75,17 @@ public class Params
     $ret = [Params]::SystemParametersInfo($SPI_SETDESKWALLPAPER, 0, $Image, $fWinIni)
 }
 
-$BingUrl = "https://www.bing.com/"
-$Response = Invoke-Webrequest -URI $BingUrl
-$BgLink = $Response.ParsedHtml.getElementById('preloadBg').href
-$ImagePath = $BingUrl + $BgLink 
-$Regex = [regex]"[^\.]+$"
-$Ext = $Regex.Match($BgLink).Value
+$BingUrlBase = "https://www.bing.com"
+$ImgDataUrl = $BingUrlBase + "/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-GB"
+$ImgDataResponse = Invoke-RestMethod -URI $ImgDataUrl
+$CleanPath = $ImgDataResponse.images[0].url.split('&')[0]
+$ImageUrl = $BingUrlBase + $CleanPath
+$Ext = $CleanPath.split('.')[-1]
 $Date = Get-Date -Format "yyyyMMdd"
 $FinalFilename = "C:\Users\" + $env:UserName + "\Pictures\BingImageOfTheDay_" + $Date + "." + $Ext
 
 if (-not(Test-Path $FinalFilename)) {
-    Invoke-WebRequest -Uri $ImagePath -OutFile $FinalFilename
+    Invoke-WebRequest -Uri $ImageUrl -OutFile $FinalFilename
 }
 
 Set-WallPaper -Image $FinalFilename -Style "Fill"
