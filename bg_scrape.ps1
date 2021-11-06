@@ -81,12 +81,18 @@ if ($ImgPath + ".*" | Test-Path) {
     Write-Host "Already got today's image"
 } else {
     Write-Host "Getting new Bing image of the day"
+    
+    # Grab image location from the API
     $BingUrlBase = "https://www.bing.com"
     $ImgDataUrl = $BingUrlBase + "/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-GB"
     $ImgDataResponse = Invoke-RestMethod -URI $ImgDataUrl
-    $CleanPath = $ImgDataResponse.images[0].url.split('&')[0]
-    $ImageUrl = $BingUrlBase + $CleanPath
-    $Ext = $CleanPath.split('.')[-1]
+    $ParsedURI = [System.Uri]($BingUrlBase + $ImgDataResponse.images[0].url)
+
+    # Strip out unecessary qs params and get the file extension
+    $Query = [System.Web.HttpUtility]::ParseQueryString($ParsedURI.Query)
+    $ImgId = $Query.Get('id')
+    $ImageUrl = $BingUrlBase + $ParsedURI.AbsolutePath + '?id=' + $ImgId
+    $Ext = $ImageUrl.split('.')[-1]
     $Date = Get-Date -Format "yyyyMMdd"
     $FinalFilename = $ImgPath + "." + $Ext
 
