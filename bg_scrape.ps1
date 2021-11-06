@@ -75,17 +75,22 @@ public class Params
     $ret = [Params]::SystemParametersInfo($SPI_SETDESKWALLPAPER, 0, $Image, $fWinIni)
 }
 
-$BingUrlBase = "https://www.bing.com"
-$ImgDataUrl = $BingUrlBase + "/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-GB"
-$ImgDataResponse = Invoke-RestMethod -URI $ImgDataUrl
-$CleanPath = $ImgDataResponse.images[0].url.split('&')[0]
-$ImageUrl = $BingUrlBase + $CleanPath
-$Ext = $CleanPath.split('.')[-1]
 $Date = Get-Date -Format "yyyyMMdd"
-$FinalFilename = "C:\Users\" + $env:UserName + "\Pictures\BingImageOfTheDay_" + $Date + "." + $Ext
+$ImgPath = "C:\Users\" + $env:UserName + "\Pictures\BingImageOfTheDay_" + $Date
+if ($ImgPath + ".*" | Test-Path) {
+    Write-Host "Already got today's image"
+} else {
+    Write-Host "Getting new Bing image of the day"
+    $BingUrlBase = "https://www.bing.com"
+    $ImgDataUrl = $BingUrlBase + "/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-GB"
+    $ImgDataResponse = Invoke-RestMethod -URI $ImgDataUrl
+    $CleanPath = $ImgDataResponse.images[0].url.split('&')[0]
+    $ImageUrl = $BingUrlBase + $CleanPath
+    $Ext = $CleanPath.split('.')[-1]
+    $Date = Get-Date -Format "yyyyMMdd"
+    $FinalFilename = $ImgPath + "." + $Ext
 
-if (-not(Test-Path $FinalFilename)) {
     Invoke-WebRequest -Uri $ImageUrl -OutFile $FinalFilename
+    Set-WallPaper -Image $FinalFilename -Style "Fill"
 }
 
-Set-WallPaper -Image $FinalFilename -Style "Fill"
