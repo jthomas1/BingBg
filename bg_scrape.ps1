@@ -93,10 +93,8 @@ if ($ImgPath + ".*" | Test-Path) {
     $ImgId = $Query.Get('id')
     $ImageUrl = $BingUrlBase + $ParsedURI.AbsolutePath + '?id=' + $ImgId
     $Ext = $ImageUrl.split('.')[-1]
-    $Date = Get-Date -Format "yyyyMMdd"
     $FinalFilename = $ImgPath + "." + $Ext
 
     Invoke-WebRequest -Uri $ImageUrl -OutFile $FinalFilename
     Set-WallPaper -Image $FinalFilename -Style "Fill"
 }
-
