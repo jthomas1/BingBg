@@ -75,19 +75,18 @@ public class Params
     $ret = [Params]::SystemParametersInfo($SPI_SETDESKWALLPAPER, 0, $Image, $fWinIni)
 }
 
-Write-Host "Testing connection"
-$connection = Test-NetConnection "bing.com" 
 
-if ($connection.PingSucceeded) {
-    Write-Host "Ping succeeded"
+$Date = Get-Date -Format "yyyyMMdd"
+$ImgPath = "C:\Users\" + $env:UserName + "\Pictures\BingImageOfTheDay_" + $Date
+if ($ImgPath + ".*" | Test-Path) {
+    Write-Host "Already got today's image"
+} else {
+    Write-Host "Getting new Bing image of the day"
+    Write-Host "Testing connection"
+    $connection = Test-NetConnection "bing.com" 
 
-    $Date = Get-Date -Format "yyyyMMdd"
-    $ImgPath = "C:\Users\" + $env:UserName + "\Pictures\BingImageOfTheDay_" + $Date
-    if ($ImgPath + ".*" | Test-Path) {
-        Write-Host "Already got today's image"
-    } else {
-        Write-Host "Getting new Bing image of the day"
-        
+    if ($connection.PingSucceeded) {
+        Write-Host "Ping succeeded" 
         # Grab image location from the API
         $BingUrlBase = "https://www.bing.com"
         $ImgDataUrl = $BingUrlBase + "/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-GB"
@@ -103,7 +102,8 @@ if ($connection.PingSucceeded) {
 
         Invoke-WebRequest -Uri $ImageUrl -OutFile $FinalFilename
         Set-WallPaper -Image $FinalFilename -Style "Fill"
-    } 
-} else {
-    Write-Host "Pinging bing.com failed"
-}
+    } else {
+        Write-Host "Pinging bing.com failed"
+    }
+
+} 
